@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Core / Already Implemented
+## 1. Core / Implemented
 
 | Category | Technology / Practice |
 |---|---|
