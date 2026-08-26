@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
   <Project Path="FinanceTracker.Api/FinanceTracker.Api.csproj" />
   <Project Path="FinanceTracker.Application/FinanceTracker.Application.csproj" />
   <Project Path="FinanceTracker.Domain/FinanceTracker.Domain.csproj" />
