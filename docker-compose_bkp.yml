@@ -1,0 +1,27 @@
+services:
+  financetracker-api:
+    build:
+      context: .
+      dockerfile: FinanceTracker.Api/Dockerfile
+    container_name: financetracker-api
+    ports:
+      - "5000:8080"
+    volumes:
+      - sqlite-data:/app/sqlite-data
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/financetracker.db
+    depends_on:
+      - rabbitmq
+      
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      
+volumes:
+  sqlite-data:
+  rabbitmq-data: 
