@@ -8,6 +8,7 @@
 
 | Category | Technology / Practice |
 |---|---|
+| Containerization | Docker (multi-stage build, API + SQLite volume + RabbitMQ via Docker Compose)
 | Runtime | .NET 8 (LTS) |
 | Data Access | Entity Framework Core (Code-First, migrations) |
 | Architecture | Domain-Driven Design (DDD) — Entities, Value Objects, Aggregates, Domain Events |
