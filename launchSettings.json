@@ -5,7 +5,8 @@
       "commandVersion": "1.0",
       "serviceActions": {
         "financetracker.api": "StartDebugging"
-      }
+      },
+      "launchUrl": "http://localhost:5000/swagger"
     }
   }
 }
