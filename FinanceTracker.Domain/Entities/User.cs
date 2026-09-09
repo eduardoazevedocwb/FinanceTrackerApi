@@ -10,16 +10,20 @@ namespace FinanceTracker.Domain.Entities
     {
         public Guid Id { get; private set; }
         public string Email { get; private set; } = string.Empty;
+        public string Name { get; private set; } = string.Empty;
+        public string Username { get; private set; } = string.Empty;
         public string PasswordHash { get; private set; } = string.Empty;
         public DateTime CreateAt { get; private set; }
 
         public User()
         {}
 
-        public User(string email, string passwordHash)
+        public User(string email, string name, string username, string passwordHash)
         {
             Id = Guid.NewGuid();
             Email = email.Trim().ToLowerInvariant();
+            Name = name.Trim();
+            Username = username.Trim().ToLowerInvariant();
             PasswordHash = passwordHash;
             CreateAt = DateTime.UtcNow;
         }

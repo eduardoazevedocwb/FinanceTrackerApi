@@ -10,7 +10,7 @@ services:
     volumes:
       - sqlite-data:/app/sqlite-data
     environment:
-      - ConnectionStrings__DefaultConnection=Data Source=/app/data/financetracker.db
+      - ConnectionStrings__DefaultConnection=Data Source=/app/sqlite-data/financetracker.db
     depends_on:
       - rabbitmq
       

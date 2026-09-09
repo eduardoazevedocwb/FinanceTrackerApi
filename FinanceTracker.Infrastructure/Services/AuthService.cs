@@ -31,7 +31,7 @@ namespace FinanceTracker.Infrastructure.Services
                 throw new Exception("User with this email already exists.");
             }
 
-            var user = new User(request.Email, string.Empty);
+            var user = new User(request.Email, request.Name, request.Username, string.Empty);
             var hash = _passwordHasher.HashPassword(user, request.Password);
             user.UpdatePasswordHash(hash);
 

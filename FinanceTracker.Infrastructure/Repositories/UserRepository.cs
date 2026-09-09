@@ -26,6 +26,17 @@ namespace FinanceTracker.Infrastructure.Repositories
             return await _context.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
         }
 
+        public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Users.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
+        {
+            var normalized = email.Trim().ToLowerInvariant();
+            return await _context.Users.AnyAsync(x => x.Email == normalized, cancellationToken);
+        }
+
         public async Task AddAsync(User user, CancellationToken cancellationToken = default)
         {
             await _context.Users.AddAsync(user, cancellationToken);

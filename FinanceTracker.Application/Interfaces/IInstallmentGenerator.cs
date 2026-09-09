@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FinanceTracker.Application.Services
+namespace FinanceTracker.Application.Interfaces
 {
     public interface IInstallmentGenerator
     {

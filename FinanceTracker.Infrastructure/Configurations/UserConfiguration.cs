@@ -23,6 +23,14 @@ namespace FinanceTracker.Infrastructure.Configurations
             builder.HasIndex(u => u.Email)
                 .IsUnique();
 
+            builder.Property(u => u.Name)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            builder.Property(u => u.Username)
+                .IsRequired()
+                .HasMaxLength(255);
+
             builder.Property(u => u.PasswordHash)
                 .IsRequired();
         }

@@ -3,6 +3,7 @@ using FinanceTracker.Api.Middleware;
 using FinanceTracker.Infrastructure;
 using FinanceTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +38,8 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+builder.Services.AddAuthorization();
 
 builder.Services
     .AddDbContext<FinanceDbContext>(options =>
