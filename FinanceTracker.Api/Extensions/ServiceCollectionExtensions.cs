@@ -1,10 +1,12 @@
 ﻿using FinanceTracker.Application.Application;
 using FinanceTracker.Application.Interfaces;
 using FinanceTracker.Application.Services;
+using FinanceTracker.Domain.Entities;
 using FinanceTracker.Infrastructure.Data;
 using FinanceTracker.Infrastructure.Repositories;
 using FinanceTracker.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -37,6 +39,9 @@ namespace FinanceTracker.Api.Extensions
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
+            services.AddHttpContextAccessor();
+            services.AddScoped<PasswordHasher<User>>();
+            services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
             services.AddScoped<IExpenseService, ExpenseService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ICreditCardService, CreditCardService>();
@@ -45,6 +50,7 @@ namespace FinanceTracker.Api.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IInstallmentGenerator, InstallmentGenerator>();
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             return services;
         }

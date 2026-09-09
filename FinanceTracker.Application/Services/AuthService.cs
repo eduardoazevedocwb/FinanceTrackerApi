@@ -4,6 +4,7 @@ using FinanceTracker.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,23 +17,21 @@ namespace FinanceTracker.Infrastructure.Services
         private readonly IJwtTokenGenerator _tokenGenerator;
         private readonly PasswordHasher<User> _passwordHasher = new();
 
-        public AuthService(IUserRepository userRepository, IJwtTokenGenerator tokenGenerator)
+        public AuthService(IUserRepository userRepository, IJwtTokenGenerator tokenGenerator, PasswordHasher<User> passwordHasher)
         {
             _userRepository = userRepository;
             _tokenGenerator = tokenGenerator;
+            _passwordHasher = passwordHasher;
         }
 
-        public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+        public async Task<AuthResponse> RegisterAsync(UserRegisterCommand request, CancellationToken cancellationToken = default)
         {
-            var existing = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
-            
-            if (existing is not null)
-            {
-                throw new Exception("User with this email already exists.");
-            }
+            if (await _userRepository.AnyByEmailAndUsernameAsync(request.Email, request.Username, cancellationToken))
+                throw new Exception("Email or username already in use.");
 
             var user = new User(request.Email, request.Name, request.Username, string.Empty);
             var hash = _passwordHasher.HashPassword(user, request.Password);
+            
             user.UpdatePasswordHash(hash);
 
             await _userRepository.AddAsync(user, cancellationToken);
@@ -40,26 +39,26 @@ namespace FinanceTracker.Infrastructure.Services
 
             var (token, expiresAt) = _tokenGenerator.GenerateToken(user);
 
-            return new AuthResponse(token, expiresAt,user.Email);
+            return new AuthResponse(token, expiresAt, new UserResponse(user.Id, user.Name, user.Username, user.Email));
         }
 
-        public async Task<AuthResponse?> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+        public async Task<AuthResponse?> LoginAsync(LoginCommand request, CancellationToken cancellationToken = default)
         {
-            var user = await _userRepository.GetByEmailAsync(request.Email, cancellationToken);
+            var user = await _userRepository.GetByEmailOrUsernameAsync(request.Email, request.Username, cancellationToken);
             if (user is null)
             {
-                throw new Exception("User not found.");
+                throw new UnauthorizedAccessException("Invalid credentials.");
             }
 
             var verification = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (verification == PasswordVerificationResult.Failed)
             {
-                throw new Exception("Invalid password.");
+                throw new UnauthorizedAccessException("Invalid password.");
             }
 
             var (token, expiresAt) = _tokenGenerator.GenerateToken(user);
 
-            return new AuthResponse(token, expiresAt, user.Email);
+            return new AuthResponse(token, expiresAt, new UserResponse(user.Id, user.Name, user.Username, user.Email));
         }
     }
 }

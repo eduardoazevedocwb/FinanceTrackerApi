@@ -19,11 +19,22 @@ namespace FinanceTracker.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+        public async Task<User?> GetByEmailOrUsernameAsync(string? email, string? username, CancellationToken cancellationToken = default)
         {
-            var normalized = email.Trim().ToLowerInvariant();
-            
-            return await _context.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+            if (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(username))
+                throw new InvalidOperationException("User not found.");
+
+            var normalizedEmail = email?.Trim().ToLowerInvariant();
+            var normalizedUsername = username?.Trim().ToLowerInvariant();
+            var user = await _context.Users.Where(x => x.Email == normalizedEmail || x.Username == normalizedUsername).ToListAsync();
+
+            if (user == null)
+                throw new UnauthorizedAccessException("Invalid credentials user not found.");
+
+            if (user?.Count > 1)
+                throw new InvalidOperationException("Multiple users found with the same email or username.");
+
+            return user?.FirstOrDefault();
         }
 
         public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -45,6 +56,14 @@ namespace FinanceTracker.Infrastructure.Repositories
         public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<bool> AnyByEmailAndUsernameAsync(string email, string username, CancellationToken cancellationToken = default)
+        {
+            var normalizedEmail = email.Trim().ToLowerInvariant();
+            var normalizedUsername = username.Trim().ToLowerInvariant();
+
+            return await _context.Users.AnyAsync(x => x.Email == normalizedEmail || x.Username == normalizedUsername, cancellationToken);
         }
     }
 }
