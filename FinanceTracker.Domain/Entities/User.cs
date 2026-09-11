@@ -18,11 +18,11 @@ namespace FinanceTracker.Domain.Entities
         public User()
         {}
 
-        public User(string email, string name, string username, string passwordHash)
+        public User(Guid? id, string email, string name, string username, string passwordHash)
         {
-            Id = Guid.NewGuid();
+            Id = id ?? Guid.NewGuid();
             Email = email.Trim().ToLowerInvariant();
-            Name = name.Trim();
+            Name = name?.Trim() ?? string.Empty;
             Username = username.Trim().ToLowerInvariant();
             PasswordHash = passwordHash;
             CreateAt = DateTime.UtcNow;

@@ -29,7 +29,13 @@ namespace FinanceTracker.Infrastructure.Services
             if (await _userRepository.AnyByEmailAndUsernameAsync(request.Email, request.Username, cancellationToken))
                 throw new Exception("Email or username already in use.");
 
-            var user = new User(request.Email, request.Name, request.Username, string.Empty);
+            var user = new User(
+                null,
+                request.Email,
+                request.Name,
+                request.Username,
+                request.Password
+            );
             var hash = _passwordHasher.HashPassword(user, request.Password);
             
             user.UpdatePasswordHash(hash);
@@ -45,15 +51,25 @@ namespace FinanceTracker.Infrastructure.Services
         public async Task<AuthResponse?> LoginAsync(LoginCommand request, CancellationToken cancellationToken = default)
         {
             var user = await _userRepository.GetByEmailOrUsernameAsync(request.Email, request.Username, cancellationToken);
-            if (user is null)
+            if (user is not null)
             {
-                throw new UnauthorizedAccessException("Invalid credentials.");
+                var verification = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+                if (verification == PasswordVerificationResult.Failed)
+                {
+                    throw new UnauthorizedAccessException("Invalid password.");
+                }
             }
-
-            var verification = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-            if (verification == PasswordVerificationResult.Failed)
+            else
             {
-                throw new UnauthorizedAccessException("Invalid password.");
+                var newUser = new User(null,request.Email,"New User",request.Username,"");
+
+                var hash = _passwordHasher.HashPassword(newUser, request.Password);
+                newUser.UpdatePasswordHash(hash);
+
+                await _userRepository.AddAsync(newUser, cancellationToken);
+                await _userRepository.SaveChangesAsync(cancellationToken);
+
+                user = newUser;
             }
 
             var (token, expiresAt) = _tokenGenerator.GenerateToken(user);

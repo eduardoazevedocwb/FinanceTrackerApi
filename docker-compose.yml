@@ -1,4 +1,12 @@
 services:
+
+  sqlite-init:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    user: root
+    volumes:
+      - sqlite-data:/app/sqlite-data
+    command: ["sh", "-c", "chown -R 1654:1654 /app/sqlite-data"]
+
   financetracker.api:
     image: ${DOCKER_REGISTRY-}financetrackerapi
     build:
@@ -13,8 +21,13 @@ services:
       - ConnectionStrings__DefaultConnection=Data Source=/app/sqlite-data/financetracker.db
       - ASPNETCORE_URLS=http://+:8080
     depends_on:
-      - rabbitmq
-      
+      sqlite-init:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_started
+    networks:
+      - financetrack-network
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -23,7 +36,62 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
-      
+    networks:
+      - financetrack-network
+
 volumes:
   sqlite-data:
-  rabbitmq-data: 
+  rabbitmq-data:
+
+networks:
+  financetrack-network:
+    driver: bridge
+# services:
+#   financetracker.api:
+#     image: ${DOCKER_REGISTRY-}financetrackerapi
+#     build:
+#       context: .
+#       dockerfile: FinanceTracker.Api/Dockerfile
+#     container_name: financetracker-api
+#     ports:
+#       - "5000:8080"
+#     volumes:
+#       - sqlite-data:/app/sqlite-data
+#     environment:
+#       - ConnectionStrings__DefaultConnection=Data Source=/app/sqlite-data/financetracker.db
+#       - ASPNETCORE_URLS=http://+:8080
+#     depends_on:
+#       - rabbitmq
+#     networks:
+#       - financetrack-network
+
+#   financetracker.frontend:
+#     build:
+#       context: ../FinanceTrackerUI
+#       dockerfile: Dockerfile
+#       args:
+#         - VITE_API_URL=http://localhost:5000/api
+#     container_name: financetracker-frontend
+#     ports:
+#       - "3000:80"
+#     depends_on:
+#       - financetracker.api
+#     networks:
+#       - financetrack-network
+ 
+#   rabbitmq:
+#     image: rabbitmq:3-management
+#     container_name: rabbitmq
+#     ports:
+#       - "5672:5672"
+#       - "15672:15672"
+#     volumes:
+#       - rabbitmq-data:/var/lib/rabbitmq
+      
+# volumes:
+#   sqlite-data:
+#   rabbitmq-data: 
+
+# networks:
+#   financetrack-network:
+#     driver: bridge  

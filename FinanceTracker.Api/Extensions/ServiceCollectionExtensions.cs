@@ -15,12 +15,31 @@ namespace FinanceTracker.Api.Extensions
 {
     public static class ServiceCollectionExtensions
     {
+        //public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+        //{
+        //    services.AddDbContext<FinanceDbContext>(options =>
+        //    {
+        //        var connectionString = options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+
+        //        Console.WriteLine($"SQLite Connection: {connectionString}");
+        //        Console.WriteLine($"Current Directory: {Environment.CurrentDirectory}");
+        //        Console.WriteLine($"SQLite Full Path: {Path.GetFullPath("finance.db")}");
+        //    });
+        //    return services;
+        //}
+
         public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+            Console.WriteLine($"SQLite Connection: {connectionString}");
+            Console.WriteLine($"Current Directory: {Environment.CurrentDirectory}");
+
             services.AddDbContext<FinanceDbContext>(options =>
             {
-                options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+                options.UseSqlite(connectionString);
             });
+
             return services;
         }
 

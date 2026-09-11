@@ -4,6 +4,7 @@ using FinanceTracker.Infrastructure;
 using FinanceTracker.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,13 +40,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins("*")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 builder.Services.AddAuthorization();
 
 builder.Services
-    .AddDbContext<FinanceDbContext>(options =>
-    {
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-    })
     .AddPersistence(builder.Configuration)
     .AddRepositories()
     .AddApplicationServices()
@@ -54,12 +59,20 @@ builder.Services
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+    db.Database.Migrate();
+}
+
 app.UseGlobalExceptionHandling();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
